@@ -11,7 +11,7 @@ router.get("/user", verifytoken, (req, res) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      res.json({ msg: "logged in successfully" });
+      res.json({ status: true, msg: "logged in successfully" });
     }
   });
 });
