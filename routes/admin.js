@@ -4,24 +4,40 @@ const res = require("express/lib/response");
 const router = express.Router();
 const Model = require("../models/model");
 const postModel = require("../models/postmodel");
+const bcrypt = require("bcrypt");
 
 //Post Method
-router.post("/adduser", async (req, res) => {
-  const data = new Model({
-    name: req.body.name,
-    age: req.body.age,
-    username: req.body.username,
-    password: req.body.password,
+router.post("/signup", async (req, res) => {
+  bcrypt.hash(req.body.password, 10, async (err, hash_password) => {
+    if (err) {
+      res.status(500).json(err);
+    } else {
+      const data = new Model({
+        name: req.body.name,
+        age: req.body.age,
+        username: req.body.username,
+        password: hash_password,
+      });
+      await Model.find({ username: req.body.username }).then(async (value) => {
+        if (value.length > 0) {
+          res.status(400).json({
+            status: false,
+            message: "username is in use",
+          });
+        } else {
+          try {
+            const dataToSave =await data.save();
+            res.status(200).json({
+              status: "success",
+              data: dataToSave,
+            });
+          } catch (error) {
+            res.status(400).json({ message: error.message });
+          }
+        }
+      });
+    }
   });
-  try {
-    const dataToSave = await data.save();
-    res.status(200).json({
-      status: "success",
-      data: dataToSave,
-    });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 });
 
 //Get all Method
